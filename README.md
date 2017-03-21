@@ -1,4 +1,4 @@
-### LoveTTS
+### LoveTTS  
 
 Text to Speech for Love2D!  
 work in progress (works on Linux)  
@@ -8,7 +8,10 @@ work in progress (works on Linux)
 &nbsp;&nbsp;$ ./build  
 
 #### to use:  
-  require "espeak.lua"
+&nbsp;&nbsp;main.lua is an example!  
+```lua
+local espeak = require "espeak"
+```
 
 #### API  
 ```lua
@@ -59,10 +62,10 @@ espeak.print_voices()
 espeak.set_voice()
 ```
 
-#### todo:
-+ clean up internals a little
-+ support different voices
-+ cross-platform
+#### todo:  
++ cross-platform  
++ support different voices  
++ make sure dynamic libs are installable  
 
 #### license:  
 &nbsp;&nbsp;this may have to be GPL because of espeak, gimme a sec lol  
