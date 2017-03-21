@@ -9,17 +9,16 @@ work in progress (works on Linux)
 
 #### to use:  
 &nbsp;&nbsp;main.lua is an example!  
-```lua
-local espeak = require "espeak"
-```
 
 #### API  
 ```lua
+local espeak = require "espeak"
+
 -- table? -> void
 espeak.init(params = nil)
 -- initialize espeak
 -- params table explained below
--- warning: can raise an error
+-- warning: can raise an error (unlikely)
 -- warning: remember to call espeak.deinit during love.quit
 
 -- void -> void
@@ -40,7 +39,7 @@ espeak.set_params(params = nil)
 --   > word_gap    - pause between words  (number units of 10 millisec (at default speed))
 
 -- string, boolean? -> int
-espeak.get_param(name, get_default = true)
+espeak.get_param(name, get_default = false)
 -- get voice parameter
 -- if get_default == true then
 --   return espeak's default
@@ -53,7 +52,7 @@ espeak.say(words)
 -- say the words
 -- will return a love.audio.Source that can be played as an audio file
 -- warning: this function blocks, best to be called during the love.load function
--- warning: can raise error
+-- warning: can raise an error (unlikely)
 
 -- [not yet implemented]
 espeak.print_voices()
@@ -65,7 +64,7 @@ espeak.set_voice()
 #### todo:  
 + cross-platform  
 + support different voices  
-+ make sure dynamic libs are installable  
++ make sure dynamic libs are installable/findable when Love2D runs  
 
 #### license:  
 &nbsp;&nbsp;this may have to be GPL because of espeak, gimme a sec lol  
