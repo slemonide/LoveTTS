@@ -4,6 +4,30 @@
 
 #include <espeak/speak_lib.h>
 
+void *
+mllc(int sz)
+{
+    void *ret = malloc(sz);
+    if (!ret) {
+        printf("fatal memory error\n");
+        exit(3);
+    }
+    return ret;
+}
+
+void *
+rllc(void *ptr, int sz)
+{
+    void *temp = realloc(ptr, sz);
+    if (!temp) {
+        printf("fatal memory error\n");
+        exit(3);
+    }
+    return temp;
+}
+
+//
+
 #define BASE_SOUND_ARRAY_SIZE 2048
 
 typedef struct {
@@ -12,16 +36,12 @@ typedef struct {
     uint64_t sample_ct;
 } sound_array;
 
-int
+void
 sound_array_init(sound_array *sa)
 {
-    sa->samples = malloc(sizeof(short) * BASE_SOUND_ARRAY_SIZE);
-    if (!sa->samples)
-        return 1;
-
+    sa->samples = mllc(sizeof(short) * BASE_SOUND_ARRAY_SIZE);
     sa->sample_max = BASE_SOUND_ARRAY_SIZE;
     sa->sample_ct = 0;
-    return 0;
 }
 
 void
@@ -34,24 +54,21 @@ sound_array_deinit(sound_array *sa)
     sa->sample_max = 0;
 }
 
-int
+void
 sound_array_clear(sound_array *sa)
 {
     sound_array_deinit(sa);
-    return sound_array_init(sa);
+    sound_array_init(sa);
 }
 
-int
+void
 sound_array_push(sound_array *sa, const short *samples, int ct)
 {
-    if (!ct) return 0;
+    if (!ct) return;
 
     if (sa->sample_max < sa->sample_ct + ct) {
         uint64_t resize_ct = sa->sample_max * 1.5 + ct * 2;
-        short *temp = realloc(sa->samples, sizeof(short) * resize_ct);
-        if (!temp)
-            return 1;
-        sa->samples = temp;
+        sa->samples = rllc(sa->samples, sizeof(short) * resize_ct);
         sa->sample_max = resize_ct;
     }
 
@@ -59,54 +76,16 @@ sound_array_push(sound_array *sa, const short *samples, int ct)
          , samples
          , ct * sizeof(short));
     sa->sample_ct += ct;
-    return 0;
 }
-
-int
-sound_array_finish(sound_array *sa)
-{
-    short *temp = realloc(sa->samples, sizeof(short) * sa->sample_ct);
-    if (!temp)
-        return 1;
-    sa->samples = temp;
-    sa->sample_max = sa->sample_ct;
-    return 0;
-}
-
-#if 0
-
-#include <assert.h>
 
 void
-sound_array_test()
+sound_array_finish(sound_array *sa)
 {
-#define BUFFER_SZ 1500
-    short buffer[BUFFER_SZ];
-    memset(buffer, 0, BUFFER_SZ);
-
-    sound_array x;
-    sound_array_init(&x);
-    assert(x.sample_ct == 0);
-    assert(x.sample_max == BASE_SOUND_ARRAY_SIZE);
-
-    sound_array_push(&x, buffer, BUFFER_SZ);
-    assert(x.sample_ct == BUFFER_SZ);
-    assert(x.sample_max == BASE_SOUND_ARRAY_SIZE);
-
-    sound_array_push(&x, buffer, BUFFER_SZ);
-    assert(x.sample_ct == BUFFER_SZ * 2);
-    assert(x.sample_max > BASE_SOUND_ARRAY_SIZE);
-
-    sound_array_finish(&x);
-    assert(x.sample_ct == BUFFER_SZ * 2);
-    assert(x.sample_max == BUFFER_SZ * 2);
-
-    sound_array_deinit(&x);
+    sa->samples = rllc(sa->samples, sizeof(short) * sa->sample_ct);
+    sa->sample_max = sa->sample_ct;
 }
 
-#endif
-
-// =================================== //
+//
 
 sound_array main_array;
 
@@ -114,35 +93,17 @@ int
 espeak_callback(short *buf, int sz, espeak_EVENT *ev)
 {
     (void) ev;
-    int err = 0;
-    if (buf)
-        err = sound_array_push(&main_array, buf, sz);
-    else
-        err = sound_array_finish(&main_array);
-
-    return err;
-}
-
-void
-copy_main_array(void *into)
-{
-    memcpy(into, main_array.samples, main_array.sample_ct * sizeof(short));
-}
-
-int
-do_speak(const char *words)
-{
-    sound_array_clear(&main_array);
-    int err = espeak_Synth(words, 0, 0, POS_CHARACTER, 0, espeakCHARS_AUTO, NULL, NULL);
-    if (err) {
-        printf("epeak synth error: %d\n", err);
-        return -1;
+    if (buf) {
+        sound_array_push(&main_array, buf, sz);
+    } else {
+        sound_array_finish(&main_array);
     }
-
-    return main_array.sample_ct;
+    return 0;
 }
 
-int
+//
+
+ESPEAK_API int
 espeak_init(int *rate)
 {
     sound_array_init(&main_array);
@@ -151,31 +112,30 @@ espeak_init(int *rate)
     return 0;
 }
 
-void
+ESPEAK_API void
 espeak_deinit()
 {
     sound_array_deinit(&main_array);
+    espeak_Terminate();
 }
 
-#if 0
-int
-main (void)
+ESPEAK_API void
+main_array_copy(void *into)
 {
-#if 0
-    sound_array_test();
-    return 0;
-#endif
+    memcpy(into, main_array.samples, main_array.sample_ct * sizeof(short));
+}
 
-    int sample_rate;
-    espeak_init(&sample_rate);
-    printf("%d\n", sample_rate);
+ESPEAK_API int
+do_speak(const char *words, int *ct)
+{
+    sound_array_clear(&main_array);
 
-    int err = do_speak("hello there hows it going wadadada long long long words.");
-    if (err) return 1;
+    int err = espeak_Synth(words, 0, 0, POS_CHARACTER, 0, espeakCHARS_AUTO, NULL, NULL);
+    if (err) {
+        printf("espeak synth error: %d\n", err);
+        return err;
+    }
 
-    printf("final %d %d\n", main_array.sample_ct, main_array.sample_max);
-    espeak_deinit();
-
+    *ct = main_array.sample_ct;
     return 0;
 }
-#endif
