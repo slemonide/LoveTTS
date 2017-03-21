@@ -1,0 +1,4 @@
+#!/bin/sh
+
+gcc -W -Wall -fPIC espeak_lib.c -c
+gcc -shared -o espeak_lib.so espeak_lib.o -lespeak
