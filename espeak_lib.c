@@ -9,7 +9,7 @@ mllc(int sz)
 {
     void *ret = malloc(sz);
     if (!ret) {
-        printf("fatal memory error\n");
+        fprintf(stderr, "fatal memory error\n");
         exit(3);
     }
     return ret;
@@ -20,7 +20,7 @@ rllc(void *ptr, int sz)
 {
     void *temp = realloc(ptr, sz);
     if (!temp) {
-        printf("fatal memory error\n");
+        fprintf(stderr, "fatal memory error\n");
         exit(3);
     }
     return temp;
@@ -108,6 +108,8 @@ espeak_init(int *rate)
 {
     sound_array_init(&main_array);
     *rate = espeak_Initialize(AUDIO_OUTPUT_SYNCHRONOUS, 0, NULL, 0);
+    if (*rate == -1)
+        return 1;
     espeak_SetSynthCallback(espeak_callback);
     return 0;
 }
@@ -132,7 +134,7 @@ do_speak(const char *words, int *ct)
 
     int err = espeak_Synth(words, 0, 0, POS_CHARACTER, 0, espeakCHARS_AUTO, NULL, NULL);
     if (err) {
-        printf("espeak synth error: %d\n", err);
+        fprintf(stderr, "espeak synth error: %d\n", err);
         return err;
     }
 

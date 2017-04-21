@@ -12,7 +12,9 @@ int espeak_GetParameter(int, int);
 ]]
 local lib_espeak = ffi.load "./espeak_lib.so"
 
-local sample_rate = "invalid sample rate"
+--
+
+local sample_rate
 
 local espeak_params = {
   rate = 1 ,
@@ -64,10 +66,13 @@ function espeak.get_param(name, get_default)
 end
 
 function espeak.say(words)
+  if not sample_rate then
+      error("please init espeak before use")
+  end
+
   local sz = ffi.new("int[1]")
   if lib_espeak.do_speak(words, sz) ~= 0 then
     error("espeak synth error")
-    return nil
   end
 
   local data = love.sound.newSoundData(sz[0], sample_rate, 16, 1)
