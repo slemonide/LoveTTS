@@ -103,14 +103,18 @@ espeak_callback(short *buf, int sz, espeak_EVENT *ev)
 
 //
 
+int rate;
+
 ESPEAK_API int
-espeak_init(int *rate)
+espeak_init()
 {
     sound_array_init(&main_array);
-    *rate = espeak_Initialize(AUDIO_OUTPUT_SYNCHRONOUS, 0, NULL, 0);
-    if (*rate == -1)
+
+    rate = espeak_Initialize(AUDIO_OUTPUT_SYNCHRONOUS, 0, NULL, 0);
+    if (rate == -1)
         return 1;
     espeak_SetSynthCallback(espeak_callback);
+
     return 0;
 }
 
@@ -122,13 +126,19 @@ espeak_deinit()
 }
 
 ESPEAK_API void
-main_array_copy(void *into)
+copy(void *into, int ct)
 {
-    memcpy(into, main_array.samples, main_array.sample_ct * sizeof(short));
+    memcpy(into, main_array.samples, ct * sizeof(short));
 }
 
 ESPEAK_API int
-do_speak(const char *words, int *ct)
+get_count()
+{
+    return main_array.sample_ct;
+}
+
+ESPEAK_API int
+speak(const char *words)
 {
     sound_array_clear(&main_array);
 
@@ -138,6 +148,5 @@ do_speak(const char *words, int *ct)
         return err;
     }
 
-    *ct = main_array.sample_ct;
     return 0;
 }

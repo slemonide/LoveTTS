@@ -1,0 +1,9 @@
+﻿  luaspai.cpp
+c:\program files (x86)\windows kits\8.1\include\um\sphelper.h(1319): warning C4996: 'GetVersionExW': was declared deprecated
+  c:\program files (x86)\windows kits\8.1\include\um\sysinfoapi.h(442): note: see declaration of 'GetVersionExW'
+d:\documents\visual studio 2015\projects\luaspai\luaspai\luaspai.cpp(26): warning C4996: 'mbstowcs': This function or variable may be unsafe. Consider using mbstowcs_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  c:\program files (x86)\windows kits\10\include\10.0.10240.0\ucrt\stdlib.h(920): note: see declaration of 'mbstowcs'
+d:\documents\visual studio 2015\projects\luaspai\luaspai\luaspai.cpp(46): warning C4244: 'initializing': conversion from 'ULONGLONG' to 'ULONG', possible loss of data
+     Creating library d:\documents\visual studio 2015\Projects\luaspai\Debug\luaspai.lib and object d:\documents\visual studio 2015\Projects\luaspai\Debug\luaspai.exp
+  luaspai.vcxproj -> d:\documents\visual studio 2015\Projects\luaspai\Debug\luaspai.dll
+  luaspai.vcxproj -> d:\documents\visual studio 2015\Projects\luaspai\Debug\luaspai.pdb (Full PDB)

@@ -2,7 +2,7 @@ local tts = require "tts"
 
  function love.load()
   tts.init()
-  local words = tts.say("weoooooo weoooo wawawaaaa")
+  local words = tts.say("hello world")
   words:play()
 end
 
